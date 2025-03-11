@@ -51,7 +51,7 @@ public:
     }
 
     TYPE *CreateArray(int nObjects, bool construct = true) {
-        return ysAllocator::TypeAllocate<TYPE, ALIGNMENT>(nObjects, construct);
+        return ysAllocator::TypeAllocate<ALIGNMENT, TYPE>(nObjects, construct);
     }
 
     void DestroyArray(TYPE *arr) {

@@ -370,7 +370,7 @@ void sample_sort<Iter_t, Compare>::initial_configuration(void)
 
     for (uint32_t i = 0; i < nthread; ++i)
     {
-        auto func = [=]()
+        auto func = [this]()
         {
             bss::spinsort<Iter_t, Compare> (vmem_thread[i].first,
                             vmem_thread[i].last, comp,

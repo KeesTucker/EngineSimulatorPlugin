@@ -241,12 +241,14 @@ FEngineSimulator::~FEngineSimulator()
 void FEngineSimulator::loadScript()
 {
     UE_LOG(LogTemp, Warning, TEXT("void UEngineSimulator::loadScript()"));
+    UE_LOG(LogTemp, Warning, TEXT("Current directory: %s"), *FPaths::ConvertRelativePathToFull(FPaths::ProjectDir()));
 
     Engine* engine = nullptr;
     Vehicle* vehicle = nullptr;
     Transmission* transmission = nullptr;
 
 #ifdef ATG_ENGINE_SIM_PIRANHA_ENABLED
+    UE_LOG(LogTemp, Warning, TEXT("Compiling enabled..."));
     es_script::Compiler compiler;
     const FString esPath = FPaths::ConvertRelativePathToFull(FPaths::Combine(FEngineSimulatorPluginModule::GetAssetDirectory(), "../es/"));
     compiler.initialize();
@@ -261,6 +263,7 @@ void FEngineSimulator::loadScript()
 
     const bool compiled = compiler.compile(TCHAR_TO_UTF8(*EnginePath));
     if (compiled) {
+        UE_LOG(LogTemp, Warning, TEXT("Compiling successful..."));
         const es_script::Compiler::Output output = compiler.execute();
 
         engine = output.engine;
@@ -363,8 +366,8 @@ void FEngineSimulator::loadEngine(Engine* engine, Vehicle* vehicle, Transmission
         ysWindowsAudioWaveFile waveFile;
         waveFile.OpenFile(response->getFilename().c_str());
         FString AudioFilePath = UTF8_TO_TCHAR(response->getFilename().c_str());
-        checkf(FPaths::FileExists(AudioFilePath), *AudioFilePath);
-        UE_LOG(LogTemp, Warning, TEXT("Loading audio file: %s"), *AudioFilePath)
+        checkf(FPaths::FileExists(AudioFilePath), TEXT("Audio file does not exist: %s"), *AudioFilePath);
+        UE_LOG(LogTemp, Warning, TEXT("Loading audio file: %s"), *AudioFilePath);
         waveFile.InitializeInternalBuffer(waveFile.GetSampleCount());
         waveFile.FillBuffer(0);
         waveFile.CloseFile();

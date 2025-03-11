@@ -44,7 +44,7 @@ void UEngineSimulatorWheeledVehicleMovementComponent::SetEngineSimChangeGearUp(b
 		if (CurrentGear != FMath::Clamp(CurrentGear + 1, -1, LastEngineSimulatorOutput.NumGears - 1))
 		{
 			CurrentGear = FMath::Clamp(CurrentGear + 1, -1, LastEngineSimulatorOutput.NumGears - 1);
-			((UEngineSimulatorWheeledVehicleSimulation*)VehicleSimulationPT.Get())->AsyncUpdateSimulation([=](IEngineSimulatorInterface* EngineInterface)
+			((UEngineSimulatorWheeledVehicleSimulation*)VehicleSimulationPT.Get())->AsyncUpdateSimulation([this](IEngineSimulatorInterface* EngineInterface)
 			{
 				EngineInterface->SetGear(CurrentGear);
 			});
@@ -57,7 +57,7 @@ void UEngineSimulatorWheeledVehicleMovementComponent::SetEngineSimChangeGearDown
 	if (VehicleSimulationPT && bNewGearDown)
 	{
 		CurrentGear = FMath::Clamp(CurrentGear - 1, -1, LastEngineSimulatorOutput.NumGears - 1);
-		((UEngineSimulatorWheeledVehicleSimulation*)VehicleSimulationPT.Get())->AsyncUpdateSimulation([=](IEngineSimulatorInterface* EngineInterface)
+		((UEngineSimulatorWheeledVehicleSimulation*)VehicleSimulationPT.Get())->AsyncUpdateSimulation([this](IEngineSimulatorInterface* EngineInterface)
 		{
 			EngineInterface->SetGear(CurrentGear);
 		});
@@ -71,7 +71,7 @@ void UEngineSimulatorWheeledVehicleMovementComponent::RespawnEngine()
 	// Make the Vehicle Simulation class that will be updated from the physics thread async callback
 	((UEngineSimulatorWheeledVehicleSimulation*)VehicleSimulationPT.Get())->Reset(EngineParameters);
 
-	((UEngineSimulatorWheeledVehicleSimulation*)VehicleSimulationPT.Get())->AsyncUpdateSimulation([=](IEngineSimulatorInterface* EngineInterface)
+	((UEngineSimulatorWheeledVehicleSimulation*)VehicleSimulationPT.Get())->AsyncUpdateSimulation([this](IEngineSimulatorInterface* EngineInterface)
 	{
 		EngineInterface->SetIgnitionEnabled(true);
 		EngineInterface->SetStarterEnabled(bStarterAutomaticallyEnabled);
@@ -86,7 +86,7 @@ void UEngineSimulatorWheeledVehicleMovementComponent::SetClutchPressure(float Pr
 	ClutchPressure = Pressure;
 	if (VehicleSimulationPT)
 	{
-		((UEngineSimulatorWheeledVehicleSimulation*)VehicleSimulationPT.Get())->AsyncUpdateSimulation([=](IEngineSimulatorInterface* EngineInterface)
+		((UEngineSimulatorWheeledVehicleSimulation*)VehicleSimulationPT.Get())->AsyncUpdateSimulation([this, Pressure](IEngineSimulatorInterface* EngineInterface)
 			{
 				EngineInterface->SetClutchPressure(Pressure);
 			}
@@ -99,7 +99,7 @@ void UEngineSimulatorWheeledVehicleMovementComponent::SetStarterEnabled(bool bEn
 	bStarterEnabled = bEnabled;
 	if (VehicleSimulationPT)
 	{
-		((UEngineSimulatorWheeledVehicleSimulation*)VehicleSimulationPT.Get())->AsyncUpdateSimulation([=](IEngineSimulatorInterface* EngineInterface)
+		((UEngineSimulatorWheeledVehicleSimulation*)VehicleSimulationPT.Get())->AsyncUpdateSimulation([this](IEngineSimulatorInterface* EngineInterface)
 			{
 				EngineInterface->SetStarterEnabled(bStarterEnabled);
 			}
@@ -111,7 +111,7 @@ void UEngineSimulatorWheeledVehicleMovementComponent::CreateVehicle()
 {
 	Super::CreateVehicle();
 
-	((UEngineSimulatorWheeledVehicleSimulation*)VehicleSimulationPT.Get())->AsyncUpdateSimulation([=](IEngineSimulatorInterface* EngineInterface)
+	((UEngineSimulatorWheeledVehicleSimulation*)VehicleSimulationPT.Get())->AsyncUpdateSimulation([this](IEngineSimulatorInterface* EngineInterface)
 	{
 		EngineInterface->SetIgnitionEnabled(true);
 		EngineInterface->SetStarterEnabled(bStarterAutomaticallyEnabled);
@@ -127,7 +127,7 @@ TUniquePtr<Chaos::FSimpleWheeledVehicle> UEngineSimulatorWheeledVehicleMovementC
 	// Make the Vehicle Simulation class that will be updated from the physics thread async callback
 	VehicleSimulationPT = MakeUnique<UEngineSimulatorWheeledVehicleSimulation>(EngineParameters);
 
-	((UEngineSimulatorWheeledVehicleSimulation*)VehicleSimulationPT.Get())->AsyncUpdateSimulation([=](IEngineSimulatorInterface* EngineInterface)
+	((UEngineSimulatorWheeledVehicleSimulation*)VehicleSimulationPT.Get())->AsyncUpdateSimulation([this](IEngineSimulatorInterface* EngineInterface)
 	{
 		EngineInterface->SetIgnitionEnabled(true);
 		EngineInterface->SetStarterEnabled(bStarterAutomaticallyEnabled);

@@ -39,6 +39,9 @@ public:
 		FEngineSimulatorInput EngineSimulatorInput;
 
 	UFUNCTION(BlueprintCallable, Category = "Engine Simulator Component")
+		void SetThrottle(float Throttle);
+
+	UFUNCTION(BlueprintCallable, Category = "Engine Simulator Component")
 		void GearUp();
 
 	UFUNCTION(BlueprintCallable, Category = "Engine Simulator Component")
@@ -57,11 +60,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Engine Simulator Component")
 		void SetStarterEnabled(bool bEnabled);
 
+	UFUNCTION(BlueprintCallable, Category = "Engine Simulator Component")
+		void SetIgnitionEnabled(bool bEnabled);
+
 	UPROPERTY(BlueprintReadOnly, Category = "Engine Simulator Component")
 		bool bStarterEnabled = false;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Engine Simulator Component")
-		bool bStarterAutomaticallyEnabled = true;
 
 	UFUNCTION(BlueprintCallable, Category = "Engine Simulator Component")
 		void RespawnEngine();

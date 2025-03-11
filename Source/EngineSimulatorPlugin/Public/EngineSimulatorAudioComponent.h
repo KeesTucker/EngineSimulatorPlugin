@@ -22,6 +22,7 @@ public:
 
 	// Called when synth is created
 	virtual bool Init(int32& InSampleRate) override;
+	virtual void BeginPlay() override;
 
 	// Called to generate more audio
 	virtual int32 OnGenerateAudio(float* OutAudio, int32 NumSamples) override;

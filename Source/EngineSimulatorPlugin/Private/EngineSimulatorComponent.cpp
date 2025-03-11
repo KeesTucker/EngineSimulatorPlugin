@@ -34,12 +34,24 @@ void UEngineSimulatorComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	}
 }
 
+void UEngineSimulatorComponent::SetThrottle(float Throttle)
+{
+	if (EngineSimulatorThread)
+	{
+		EngineSimulatorThread->EnqueueUpdate([this, Throttle](IEngineSimulatorInterface* EngineInterface)
+		{
+			EngineInterface->SetSpeedControl(Throttle);	
+		});
+	}
+
+}
+
 void UEngineSimulatorComponent::GearUp()
 {
 	CurrentGear = FMath::Clamp(CurrentGear + 1, -1, EngineSimulatorOutput.NumGears - 1);
 	if (EngineSimulatorThread)
 	{
-		EngineSimulatorThread->EnqueueUpdate([=](IEngineSimulatorInterface* EngineInterface)
+		EngineSimulatorThread->EnqueueUpdate([this](IEngineSimulatorInterface* EngineInterface)
 		{
 			EngineInterface->SetGear(CurrentGear);
 		});
@@ -52,7 +64,7 @@ void UEngineSimulatorComponent::GearDown(bool bNewGearDown)
 	CurrentGear = FMath::Clamp(CurrentGear - 1, -1, EngineSimulatorOutput.NumGears - 1);
 	if (EngineSimulatorThread)
 	{
-		EngineSimulatorThread->EnqueueUpdate([=](IEngineSimulatorInterface* EngineInterface)
+		EngineSimulatorThread->EnqueueUpdate([this](IEngineSimulatorInterface* EngineInterface)
 		{
 			EngineInterface->SetGear(CurrentGear);
 		});
@@ -64,7 +76,7 @@ void UEngineSimulatorComponent::SetClutchPressure(float Pressure)
 	ClutchPressure = Pressure;
 	if (EngineSimulatorThread)
 	{
-		EngineSimulatorThread->EnqueueUpdate([=](IEngineSimulatorInterface* EngineInterface)
+		EngineSimulatorThread->EnqueueUpdate([this, Pressure](IEngineSimulatorInterface* EngineInterface)
 		{
 			EngineInterface->SetClutchPressure(Pressure);
 		});
@@ -76,9 +88,21 @@ void UEngineSimulatorComponent::SetStarterEnabled(bool bEnabled)
 	bStarterEnabled = bEnabled;
 	if (EngineSimulatorThread)
 	{
-		EngineSimulatorThread->EnqueueUpdate([=](IEngineSimulatorInterface* EngineInterface)
+		EngineSimulatorThread->EnqueueUpdate([this, bEnabled](IEngineSimulatorInterface* EngineInterface)
 		{
 			EngineInterface->SetStarterEnabled(bEnabled);
+		});
+	}
+}
+
+void UEngineSimulatorComponent::SetIgnitionEnabled(bool bEnabled)
+{
+	bStarterEnabled = bEnabled;
+	if (EngineSimulatorThread)
+	{
+		EngineSimulatorThread->EnqueueUpdate([this, bEnabled](IEngineSimulatorInterface* EngineInterface)
+		{
+			EngineInterface->SetIgnitionEnabled(true);
 		});
 	}
 }
@@ -87,13 +111,6 @@ void UEngineSimulatorComponent::RespawnEngine()
 {
 	EngineSimulatorThread = MakeUnique<FEngineSimulatorThread>(FEngineSimulatorParameters());
 
-	EngineSimulatorThread->EnqueueUpdate([=](IEngineSimulatorInterface* EngineInterface)
-	{
-		EngineInterface->SetIgnitionEnabled(true);
-		EngineInterface->SetStarterEnabled(bStarterAutomaticallyEnabled);
-	});
-
-	bStarterEnabled = bStarterAutomaticallyEnabled;
 	CurrentGear = -1;
 }
 

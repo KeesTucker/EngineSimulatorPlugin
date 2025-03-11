@@ -42,33 +42,68 @@ void UEngineSimulatorAudioComponent::OnComponentCreated()
 
 bool UEngineSimulatorAudioComponent::Init(int32& InSampleRate)
 {
-	check(IsInGameThread());
+	InSampleRate = 44100; // Set desired sample rate here
+	NumChannels = 1;      // Mono audio
+
+	return true;
+}
+
+void UEngineSimulatorAudioComponent::BeginPlay()
+{
+	Super::BeginPlay();
 
 	if (bAutomaticallySetEngineComponent)
 	{
-		TArray<UActorComponent*> EngineComponents = GetOwner()->GetComponentsByInterface(UEngineSimulatorEngineInterface::StaticClass());
-		if (EngineComponents.Num() > 0)
+		if (AActor* Owner = GetOwner())
 		{
-			EngineComponent = EngineComponents[0];
+			TArray<UActorComponent*> Components;
+			Owner->GetComponents(Components);
+
+			EngineComponent = nullptr;
+
+			for (UActorComponent* Component : Components)
+			{
+				if (Component && Component->GetClass()->ImplementsInterface(UEngineSimulatorEngineInterface::StaticClass()))
+				{
+					IEngineSimulatorEngineInterface* EngineInterface = Cast<IEngineSimulatorEngineInterface>(Component);
+					if (EngineInterface)
+					{
+						EngineComponent = Component;
+						EngineSimulator = EngineInterface->GetEngineSimulator();
+						break;
+					}
+				}
+			}
+
+			if (!EngineSimulator.IsValid())
+			{
+				UE_LOG(LogTemp, Error, TEXT("Could not find a valid EngineSimulator instance."));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("UEngineSimulatorAudioComponent has no owner!"));
+		}
+
+		SetOutputToBusOnly(bOutputToAudioBus);
+
+		if (bOutputToAudioBus && AudioBus == nullptr)
+		{
+			AudioBus = NewObject<UAudioBus>(this);
+			FSoundSourceBusSendInfo BusSendInfo;
+			BusSendInfo.AudioBus = AudioBus;
+
+			if (BusSends.Num() == 0)
+			{
+				BusSends.Add(BusSendInfo);
+			}
+			else
+			{
+				BusSends[0] = BusSendInfo;
+			}
+			SetAudioBusSendPostEffect(AudioBus, 1.0f);
 		}
 	}
-
-	EngineSimulator = EngineComponent != nullptr ? EngineComponent->GetEngineSimulator() : nullptr;
-
-	SetOutputToBusOnly(bOutputToAudioBus);
-	if (AudioBus)
-	{
-		if (Audio::FMixerDevice* MixerDevice = FAudioDeviceManager::GetAudioMixerDeviceFromWorldContext(this))
-		{
-			uint32 AudioBusId = AudioBus->GetUniqueID();
-			int32 AudioBusNumChannels = (int32)AudioBus->AudioBusChannels + 1;
-			MixerDevice->StartAudioBus(AudioBusId, AudioBusNumChannels, false);
-		}
-	}
-
-	NumChannels = 1;
-	InSampleRate = 44000;
-	return true;
 }
 
 int32 UEngineSimulatorAudioComponent::OnGenerateAudio(float* OutAudio, int32 NumSamples)
