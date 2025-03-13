@@ -299,7 +299,7 @@ private node hsq_701_transmission {
     alias output __out: transmission;
 
     transmission transmission(
-        max_clutch_torque: 100 * units.Nm
+        max_clutch_torque: 200 * units.Nm
     )
 
     transmission.add_gear(1)
@@ -309,7 +309,7 @@ private node hsq_701 {
     alias output __out:
         vehicle(
             mass: (155 + 75) * units.kg,
-            drag_coefficient: 0.7,ves
+            drag_coefficient: 0.7,
             cross_sectional_area: (70 * units.cm) * (170 * units.cm),
             diff_ratio: 1.0,
             tire_radius: 100.0 * units.mm,
